@@ -1,0 +1,41 @@
+from . import *
+# import pdb
+
+if __name__ == "__main__":
+    expr = Times(Constant(1), Times(Minus(Plus(Constant(3), Constant(-2)), Variable("y")), Variable("x")))
+    print(f"expr = {expr:tree}")
+    expr = simplify(expr)
+    print(f"Simplified expr = {expr:tree}")
+    dx = partial(expr, "x")
+    dy = partial(expr, "y")
+    dz = partial(expr, "z")
+    print(f"d/dx expr = {dx}")
+    print(f"d/dy expr = {dy}")
+    print(f"d/dz expr = {dz}")
+    expr_eval = evaluate(expr, {"x": 3, "y": 4})
+    print(f"expr(x=3, y=4) = {expr_eval}")
+    expr2 = Ln(Cos(Power(Variable("x"), Constant(2))))
+    print(f"expr2 = {expr2}")
+    dx_expr2 = partial(expr2, "x")
+    # pdb.set_trace()
+    print(f"d/dx expr2 = {dx_expr2:t}")
+    expr3 = Power(Variable("x"), Variable("x"))
+    print(f"expr3 = {expr3}")
+    dx_expr3 = partial(expr3, "x")
+    print(f"d/dx expr3 = {dx_expr3}")
+    expr4 = Sum(Power(Times(Variable("x"), Variable("y")),Constant(2)),
+                Power(Product(Variable("x"), Variable("y")),Constant(2)),    
+                Power(Constant(2), Times(Variable("x"), Variable("y"))),
+                Power(Constant(2), Product(Variable("x"), Variable("y"))))
+    print(f"expr4 = {expr4:t}")
+    print(f"Variables of expr4: {expr4.variables}")
+    expr4_eval = expr4.evaluate({"x": 1, "y": 2})
+    print(f"expr4(x=1, y=2) = {expr4_eval}")
+    expr4_pyfunc = expr4.pyfunc()
+    print(f"Evaluation as python function yields the same result: {expr4_pyfunc(1, 2)}")
+    expr2_eval = expr2.evaluate({"x": 1})
+    print(f"expr2(1) = {expr2_eval}")
+    expr5 = Divide(Divide(Variable("a"), Variable("b")), Divide(Divide(Variable("c"), Variable("d")), Divide(Variable("e"), Variable("f"))))
+    print(f"{expr5} = {expr5.simplify():py}")
+    expr6 = Plus(Ln(Power(Variable("x"), Constant(2))), Sum(Constant(1), Power(Variable("x"), Constant(2))))
+    print(f"expr6 as tree: {expr6.simplify():tree}")
