@@ -161,6 +161,17 @@ class Minus(BinaryOperator):
 
 Plus.inverse = Minus
         
+class UnaryMinus(UnaryMinusFormatter, Expression):
+    subexpr_names = ('expression',)
+    def __init__(self, expression):
+        self.expression = expression
+    def partial(self, variable):
+        return UnaryMinus(self.expression.partial(variable)).simplify()
+    def evaluate(self, environment):
+        return -self.expression.evaluate(environment)
+    def evaluate_at(self, expression):
+        return UnaryMinus(self.expression.evaluate_at(expression))
+        
 class Times(AbelianBinaryOperator):
     symbol = py_symbol = " * "
     tex_symbol = "\\cdot "

@@ -12,7 +12,7 @@ class ExpressionFormatter:
         return str(self)
     def pyformat(self):
         return str(self)
-    def treeformat(self, indent=" "):
+    def treeformat(self, indent=""):
         result = "\n" + indent + self.nodeinfo
         for index, subexpr in enumerate(self.subexpressions):
             last = (len(self.subexpressions) == index+1)
@@ -114,7 +114,6 @@ class ScalarFunctionFormatter:
         name = self.__class__.name
         return f"{name}({self.argument})"
     def pyformat(self):
-        print("foo")
         name = self.__class__.name.lower()
         return f"{name}({self.argument:py})"
     def texformat(self):
@@ -123,3 +122,13 @@ class ScalarFunctionFormatter:
     def rawformat(self):
         name = self.__class__.name
         return f"{name}({self.argument:r})"
+
+class UnaryMinusFormatter:
+    def __str__(self):
+        return f"-{self.expression}"
+    def pyformat(self):
+        return f"-{self.expression:py}"
+    def texformat(self):
+        return f"-{self.expression:t}"
+    def rawformat(self):
+        return f"UnaryMinus({self.argument:r})"

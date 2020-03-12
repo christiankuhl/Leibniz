@@ -9,13 +9,23 @@ class Expression(ExpressionFormatter):
     def __repr__(self):
         return str(self)
     def __add__(self, other):
+        from .operators import Plus
         return Plus(self, other)
     def __mul__(self, other):
+        from .operators import Times
         return Times(self, other)
     def __sub__(self, other):
+        from .operators import Minus
         return Minus(self, other)
-    def __div__(self, other):
+    def __neg__(self):
+        from .operators import UnaryMinus
+        return UnaryMinus(self)
+    def __truediv__(self, other):
+        from .operators import Divide
         return Divide(self, other)    
+    def __pow__(self, other):
+        from .operators import Power
+        return Power(self, other)    
     def __le__(self, other):
         from .sorting import _sort_key
         return _sort_key(self) <= _sort_key(other)
@@ -67,7 +77,7 @@ class Constant(ConstantFormatter, Expression):
     def variables(self):
         return set()
         
-class Variable(Expression, VariableFormatter):
+class Variable(VariableFormatter, Expression):
     def __init__(self, name):
         self.name = name
     def __eq__(self, other):
