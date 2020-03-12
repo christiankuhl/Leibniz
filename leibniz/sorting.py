@@ -1,10 +1,11 @@
-from .base import Constant, Variable
+from .base import Constant, Variable, Dot
 from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, UnaryMinus
 from .functions import ScalarFunction
 
 SORT_ORDER = {
     Constant: 1,
     Variable: 2,
+    Dot: 2,
     Sum: 4,
     Plus: 3,
     Minus: 5,

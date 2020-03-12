@@ -259,7 +259,8 @@ class Power(PowerFormatter, BinaryOperator):
         self.right = self.right.simplify()
         self.left = self.left.simplify()
         if self.right.free_of(variable):
-            return Times(self.right, Power(self.left, Minus(self.right, Constant(1)))).simplify()
+            return Product(self.right, self.left.partial(variable),
+                           Power(self.left, Minus(self.right, Constant(1)))).simplify()
         elif self.left.free_of(variable):
             return Times(Times(Ln(self.left), self.right.partial(variable)), self).simplify()
         else:
