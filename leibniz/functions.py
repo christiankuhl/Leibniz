@@ -1,4 +1,4 @@
-import math        
+import math
 
 STANDARD_FUNCTIONS = ["log", "exp", "cos", "sin", "tan", "cosh", "sinh", "tanh", "sqrt", "atan", "atanh", "asin", "acos"]
 
@@ -18,23 +18,27 @@ class ScalarFunction(ScalarFunctionFormatter, Expression):
     def evaluate(self, environment={}):
         argument = self.argument.evaluate(environment)
         return self.__class__.pyfunction(argument)
+    @classmethod
     def evaluate_at(self, expression):
-        return self.__class__(self.argument.evaluate_at(expression))
+        if isinstance(self, ScalarFunction):
+            return self.__class__(self.argument.evaluate_at(expression))
+        else:
+            return self(expression)
     def partial(self, variable):
         return Times(self.__class__.derivative.evaluate_at(self.argument), self.argument.partial(variable))
     def sort(self):
         return self.__class__(self.argument.sort())
-       
+
 for _function in STANDARD_FUNCTIONS:
     _classname = _function.capitalize()
     _fp = getattr(globals()["math"], _function)
     globals()[_classname] = type(_classname, (ScalarFunction,), {"name": _classname, "pyfunction": _fp})
 
 Log.derivative = Divide(Constant(1), Dot())
-Exp.derivative = Exp(Dot())    
+Exp.derivative = Exp(Dot())
 Sin.derivative = Cos(Dot())
 Cos.derivative = UnaryMinus(Sin(Dot()))
-Tan.derivative = Plus(Constant(1), Power(Tan(Dot()), Constant(2)))    
+Tan.derivative = Plus(Constant(1), Power(Tan(Dot()), Constant(2)))
 Sinh.derivative = Cosh(Dot())
 Cosh.derivative = Sinh(Dot())
 Tanh.derivative = Minus(Constant(1), Power(Tanh(Dot()), Constant(2)))

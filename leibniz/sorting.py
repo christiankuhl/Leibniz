@@ -1,5 +1,5 @@
 from .base import Constant, Variable
-from .operators import Sum, Plus, Minus, Product, Times, Divide, Power
+from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, UnaryMinus
 from .functions import ScalarFunction
 
 SORT_ORDER = {
@@ -8,6 +8,7 @@ SORT_ORDER = {
     Sum: 4,
     Plus: 3,
     Minus: 5,
+    UnaryMinus: 5,
     Product: 7,
     Times: 6,
     Divide: 8,
@@ -17,7 +18,7 @@ SORT_ORDER = {
 
 def _sort_key(expression):
     return SORT_ORDER[_class(expression)]
-    
+
 def _class(expression):
     if isinstance(expression, ScalarFunction):
         return ScalarFunction
