@@ -10,14 +10,16 @@ _GRAMMAR = f"""
     ?function: {_function_grammar}
     ?power: atom "^" atom           -> pow
     ?product: atom "*" product      -> mul
+         | atom product             -> mul
          | atom "/" product         -> div
          | atom
     ?sum: product "+" sum           -> add
          | product "-" sum          -> sub
          | product
+    ?var: NAME                      -> var
     ?atom: NUMBER                   -> number
          | "-" atom                 -> neg
-         | NAME                     -> var
+         | var
          | parexpr
          | power
          | function
@@ -50,7 +52,7 @@ def repl():
     while True:
         try:
             s = input('> ')
-        except EOFError:
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
             break
         print(f"{parse(s):tree}")
-
