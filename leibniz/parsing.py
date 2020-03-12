@@ -62,4 +62,4 @@ def repl():
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
             break
-        print(f"{parse(s)}")
+        print(f"{parse(s):raw}")

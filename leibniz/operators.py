@@ -16,7 +16,7 @@ class BinaryOperator(BinaryOperatorFormatter, Expression):
         self.left = self.left.simplify()
         self.right = self.right.simplify()
         if isinstance(self.left, Constant) and isinstance(self.right, Constant):
-            return Constant(self.__class__.pyoperator(self.left.value, self.right.value))      
+            return Constant(self.__class__.pyoperator(self.left.value, self.right.value))
         if self.__class__.left_identity:
             if self.left == self.__class__.left_identity:
                 return self.right
@@ -76,7 +76,7 @@ class AbelianCollection(AbelianCollectionFormatter, Expression):
         numerators = [term.left for term in inverses]
         denominators = [term.right for term in inverses]
         terms = numerators + [term for term in terms if not isinstance(term, operator.inverse)]
-        constants = [term for term in terms if isinstance(term, Constant)] 
+        constants = [term for term in terms if isinstance(term, Constant)]
         variable_terms = [term for term in terms if not isinstance(term, Constant)]
         if constants:
             constant = Constant(self.__class__(*constants).evaluate())
@@ -93,7 +93,7 @@ class AbelianCollection(AbelianCollectionFormatter, Expression):
             denominator = self.__class__(*denominators).simplify()
             expression = operator.inverse(expression, denominator)
         return expression
-            
+
 class AbelianBinaryOperator(BinaryOperator):
     def simplify(self):
         simplified = super().simplify()
@@ -125,12 +125,12 @@ class AbelianBinaryOperator(BinaryOperator):
 class Sum(AbelianCollection):
     def partial(self, variable):
         return Sum(*(term.partial(variable) for term in self.terms)).simplify()
-    
+
 class Product(AbelianCollection):
     def partial(self, variable):
-        return Sum(*(Product(*(term if idx != pivot_idx else pivot.partial(variable) for (idx, term) in enumerate(self.terms))) 
+        return Sum(*(Product(*(term if idx != pivot_idx else pivot.partial(variable) for (idx, term) in enumerate(self.terms)))
                                                                    for (pivot_idx, pivot) in enumerate(self.terms))).simplify()
-        
+
 class Plus(AbelianBinaryOperator):
     symbol = py_symbol = " + "
     tex_symbol = "+"
@@ -142,7 +142,7 @@ class Plus(AbelianBinaryOperator):
         return Plus(self.left.partial(variable), self.right.partial(variable)).simplify()
 
 Sum.binaryoperator = Plus
-               
+
 class Minus(BinaryOperator):
     symbol = py_symbol = " - "
     tex_symbol = "-"
@@ -160,7 +160,7 @@ class Minus(BinaryOperator):
         return simplified
 
 Plus.inverse = Minus
-        
+
 class UnaryMinus(UnaryMinusFormatter, Expression):
     subexpr_names = ('expression',)
     def __init__(self, expression):
@@ -171,7 +171,12 @@ class UnaryMinus(UnaryMinusFormatter, Expression):
         return -self.expression.evaluate(environment)
     def evaluate_at(self, expression):
         return UnaryMinus(self.expression.evaluate_at(expression))
-        
+    def simplify(self):
+        if isinstance(self.expression, UnaryMinus):
+            return self.expression
+        else:
+            return Times(Constant(-1), self.expression).simplify()
+
 class Times(AbelianBinaryOperator):
     symbol = py_symbol = " * "
     tex_symbol = "\\cdot "
@@ -188,7 +193,7 @@ class Times(AbelianBinaryOperator):
         return Plus(Times(uprime, self.right), Times(self.left, vprime)).simplify()
 
 Product.binaryoperator = Times
-        
+
 class Divide(DivisionFormatter, BinaryOperator):
     symbol = py_symbol = " / "
     needs_parentheses = True
@@ -224,7 +229,7 @@ class Divide(DivisionFormatter, BinaryOperator):
         return Divide(Minus(Times(uprime, self.right), Times(self.left, vprime)), Power(self.right, Constant(2))).simplify()
 
 Times.inverse = Divide
-        
+
 class Power(PowerFormatter, BinaryOperator):
     symbol = "^"
     py_symbol = "**"
@@ -258,8 +263,8 @@ class Power(PowerFormatter, BinaryOperator):
         elif self.left.free_of(variable):
             return Times(Times(Ln(self.left), self.right.partial(variable)), self).simplify()
         else:
-            return Times(Plus(Divide(Times(self.right, self.left.partial(variable)), self.left), 
+            return Times(Plus(Divide(Times(self.right, self.left.partial(variable)), self.left),
                         Times(Ln(self.left), self.right.partial(variable))), self).simplify()
-                        
+
 Sum.up = Times
 Product.up = Power

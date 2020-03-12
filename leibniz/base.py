@@ -22,10 +22,10 @@ class Expression(ExpressionFormatter):
         return UnaryMinus(self)
     def __truediv__(self, other):
         from .operators import Divide
-        return Divide(self, other)    
+        return Divide(self, other)
     def __pow__(self, other):
         from .operators import Power
-        return Power(self, other)    
+        return Power(self, other)
     def __le__(self, other):
         from .sorting import _sort_key
         return _sort_key(self) <= _sort_key(other)
@@ -56,10 +56,20 @@ class Expression(ExpressionFormatter):
         function = eval(code, {'self': self})
         function.__doc__ = f"({signature}) -> {self:py}"
         return function
+    @property
+    def derivative(self):
+        return self.partial(None).simplify()
+    def substitute(self, variable, expression):
+        return self
 
 class Dot(DotFormatter, Expression):
     def evaluate_at(self, expression):
         return expression
+    def partial(self, variable):
+        if variable:
+            return Constant(0)
+        else:
+            return Constant(1)
 
 class Constant(ConstantFormatter, Expression):
     def __init__(self, value):
@@ -76,9 +86,10 @@ class Constant(ConstantFormatter, Expression):
     @property
     def variables(self):
         return set()
-        
+
 class Variable(VariableFormatter, Expression):
     def __init__(self, name):
+        assert name
         self.name = name
     def __eq__(self, other):
         if isinstance(other, Variable):
@@ -95,7 +106,12 @@ class Variable(VariableFormatter, Expression):
     @property
     def variables(self):
         return set(self.name)
-        
+    def substitute(self, variable, expression):
+        if self == variable:
+            return expression
+        else:
+            return self
+
 class Vector(Expression):
     def __init__(self, components):
         self.components = components
@@ -116,7 +132,7 @@ class Vector(Expression):
 
 def partial(expression, variable):
     return expression.partial(variable).simplify()
-    
+
 def simplify(expression):
     return expression.simplify()
 

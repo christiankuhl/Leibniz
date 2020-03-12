@@ -65,7 +65,7 @@ class VariableFormatter:
     @property
     def nodeinfo(self):
         return f"{self:raw}"
- 
+
 class BinaryOperatorFormatter:
     def _format(self, spec):
         symbol = getattr(self.__class__, SYMBOLS[spec])
@@ -80,7 +80,7 @@ class BinaryOperatorFormatter:
         return self._format("tex")
     def rawformat(self):
         return f"{self.__class__.__name__}({self.left:r}, {self.right:r})"
-        
+
 class AbelianCollectionFormatter:
     def _format(self, spec):
         symbol = getattr(self.__class__.binaryoperator, SYMBOLS[spec])
@@ -131,4 +131,4 @@ class UnaryMinusFormatter:
     def texformat(self):
         return f"-{self.expression:t}"
     def rawformat(self):
-        return f"UnaryMinus({self.argument:r})"
+        return f"UnaryMinus({self.expression:r})"
