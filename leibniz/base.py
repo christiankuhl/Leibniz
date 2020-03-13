@@ -43,7 +43,8 @@ class Expression(ExpressionFormatter):
         return subexprs
     @property
     def variables(self):
-        return set(var for subexpr in self.subexpressions for var in subexpr.variables)
+        return set(var for subexpr in self.subexpressions
+                for var in subexpr.variables)
     def free_of(self, variable):
         return variable not in self.variables
     def sort(self):

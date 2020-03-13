@@ -1,5 +1,6 @@
 from .base import Constant, Variable, Dot
-from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, UnaryMinus
+from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, \
+    UnaryMinus
 from .functions import ScalarFunction
 
 SORT_ORDER = {

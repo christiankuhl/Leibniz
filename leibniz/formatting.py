@@ -4,8 +4,10 @@ RAW = {"r", "raw"}
 PYTHON = {"py", "python"}
 TREE = {"tree"}
 
-FSTRINGS = {"plain": "{:p}", "tex": "{:t}", "python": "{:py}", "raw": "{:r}", "tree": "{:tree}", "py": "{:py}"}
-SYMBOLS = {"plain": "symbol", "tex": "tex_symbol", "python": "py_symbol", "py": "py_symbol"}
+FSTRINGS = {"plain": "{:p}", "tex": "{:t}", "python": "{:py}", "raw": "{:r}",
+            "tree": "{:tree}", "py": "{:py}"}
+SYMBOLS = {"plain": "symbol", "tex": "tex_symbol", "python": "py_symbol",
+           "py": "py_symbol"}
 
 class ExpressionFormatter:
     def texformat(self):
@@ -15,7 +17,7 @@ class ExpressionFormatter:
     def treeformat(self, indent=""):
         result = "\n" + indent + self.nodeinfo
         for index, subexpr in enumerate(self.subexpressions):
-            last = (len(self.subexpressions) == index+1)
+            last = (len(self.subexpressions) == index + 1)
             indent = indent.replace("└─", "  ").replace("├─", "│ ")
             new_indent = indent + ("  └─ " if last else "  ├─ ")
             result += subexpr.treeformat(new_indent)
@@ -44,7 +46,7 @@ class DotFormatter:
     def __str__(self):
         return "·"
     def texformat(self):
-        return "\cdot"
+        return "\\cdot"
     def rawformat(self):
         return "Dot()"
 
@@ -84,7 +86,7 @@ class BinaryOperatorFormatter:
 class AbelianCollectionFormatter:
     def _format(self, spec):
         symbol = getattr(self.__class__.binaryoperator, SYMBOLS[spec])
-        collection = symbol.join(FSTRINGS[spec].format(term) for term in self.terms)
+        collection = symbol.join(FSTRINGS[spec].format(t) for t in self.terms)
         return self.parenthesise(collection)
     def __str__(self):
         return self._format("plain")
