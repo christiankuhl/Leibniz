@@ -10,19 +10,21 @@ _GRAMMAR = f"""
     ?parexpr: "(" expr ")"
     {_function_terminals}
     ?funcname: {_function_names}
-                | funcname "'"      -> deriv
+                | funcname "'"                                      -> deriv
     ?funcappl: (funcname) parexpr
-    ?power: atom "^" atom           -> pow
-    ?product: atom "*" product      -> mul
-         | atom product             -> mul
-         | atom "/" product         -> div
+    ?power: atom "^" atom                                           -> pow
+    ?product: atom "*" product                                      -> mul
+         | atom atom_nonum                                          -> mul
+         | atom "/" product                                         -> div
          | atom
-    ?sum: product "+" sum           -> add
-         | product "-" sum          -> sub
+    ?sum: product "+" sum                                           -> add
+         | product "-" sum                                          -> sub
          | product
-    ?var: NAME                      -> var
-    ?atom: NUMBER                   -> number
-         | "-" atom                 -> neg
+    ?var: NAME                                                      -> var
+    ?atom: atom_nonum
+         | NUMBER                                                   -> number
+    ?atom_nonum:
+         | "-" atom                                                 -> neg
          | var
          | parexpr
          | power
@@ -62,4 +64,4 @@ def repl():
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
             break
-        print(f"{parse(s)}")
+        print(f"{parse(s).simplify()}")
