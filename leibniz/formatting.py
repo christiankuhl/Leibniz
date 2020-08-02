@@ -22,7 +22,7 @@ class ExpressionFormatter:
             new_indent = indent + ("  └─ " if last else "  ├─ ")
             result += subexpr.treeformat(new_indent)
         return result
-    def __format__(self, format_spec):
+    def __format__(self, format_spec=""):
         if format_spec in PLAINTEXT:
             return str(self)
         elif format_spec in TEX:

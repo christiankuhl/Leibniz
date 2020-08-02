@@ -8,12 +8,12 @@ STANDARD_FUNCTIONS = ["log", "exp", "cos", "sin", "tan", "cosh", "sinh",
 
 class ScalarFunction(ScalarFunctionFormatter, Expression):
     subexpr_names = ("argument",)
-    def __init__(self, argument):
+    def __init__(self, argument=Dot()):
         self.argument = argument
     def simplify(self):
         self.argument = self.argument.simplify()
         if isinstance(self.argument, Constant):
-            return Constant(self.__class__.function(self.argument.value))
+            return Constant(self.__class__.pyfunction(self.argument.value))
         return self
     def evaluate(self, environment={}):
         argument = self.argument.evaluate(environment)

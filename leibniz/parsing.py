@@ -13,22 +13,23 @@ _GRAMMAR = f"""
                 | funcname "'"                                      -> deriv
     ?funcappl: (funcname) parexpr
     ?power: atom "^" atom                                           -> pow
-    ?product: atom "*" product                                      -> mul
-         | atom atom_nonum                                          -> mul
-         | atom "/" product                                         -> div
-         | atom
+    ?atom: atom_nonum
+         | NUMBER                                                   -> number
+    ?product: neg_atom "*" product                                  -> mul
+         | neg_atom atom_nonum                                      -> mul
+         | product "/" atom                                         -> div
+         | neg_atom
     ?sum: product "+" sum                                           -> add
          | product "-" sum                                          -> sub
          | product
     ?var: NAME                                                      -> var
-    ?atom: atom_nonum
-         | NUMBER                                                   -> number
-    ?atom_nonum:
-         | "-" atom                                                 -> neg
-         | var
+    ?atom_nonum: var
          | parexpr
          | power
          | funcappl
+         | funcname
+    ?neg_atom: "-" atom                                             -> neg
+         | atom
     %import common.CNAME -> NAME
     %import common.NUMBER
     %import common.WS_INLINE
@@ -48,7 +49,7 @@ class LeibnizTree(Transformer):
     def var(self, name):
         return Variable(name)
     def func(self, name):
-        return globals()[name]
+        return globals()[name]()
     def deriv(self, function):
         return function.derivative
     def funcappl(self, function, argument):
@@ -64,4 +65,6 @@ def repl():
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
             break
+        except Exception as e:
+            print(e)
         print(f"{parse(s).simplify()}")

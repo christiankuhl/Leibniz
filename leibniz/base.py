@@ -49,7 +49,7 @@ class Expression(ExpressionFormatter):
         return variable not in self.variables
     def sort(self):
         return self
-    def pyfunc(self):
+    def pyfunction(self):
         vars = sorted(list(self.variables))
         signature = ",".join(vars)
         call_dict = ",".join(f"'{var}': {var}" for var in vars)
