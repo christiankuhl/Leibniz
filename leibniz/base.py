@@ -1,5 +1,5 @@
 import collections
-from .formatting import *
+from .formatting import ExpressionFormatter, DotFormatter, ConstantFormatter, VariableFormatter
 
 class Expression(ExpressionFormatter):
     subexpr_names = ()

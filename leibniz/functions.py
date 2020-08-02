@@ -1,7 +1,7 @@
 import math
-from .base import *
+from .base import Expression, Constant, Dot, Variable
 from .operators import Plus, Minus, Times, Divide, Power, UnaryMinus
-from .formatting import *
+from .formatting import ScalarFunctionFormatter
 
 STANDARD_FUNCTIONS = ["log", "exp", "cos", "sin", "tan", "cosh", "sinh",
                       "tanh", "sqrt", "atan", "atanh", "asin", "acos"]

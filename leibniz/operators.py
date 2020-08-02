@@ -1,6 +1,6 @@
 from operator import add, sub, mul, truediv as div, neg, pow
-from .base import *
-from .formatting import *
+from .base import Expression, Constant
+from .formatting import BinaryOperatorFormatter, AbelianCollectionFormatter, UnaryMinusFormatter, DivisionFormatter, PowerFormatter
 
 class BinaryOperator(BinaryOperatorFormatter, Expression):
     subexpr_names = ("left", "right")
