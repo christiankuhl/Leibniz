@@ -134,3 +134,37 @@ class UnaryMinusFormatter:
         return f"-{self.expression:t}"
     def rawformat(self):
         return f"UnaryMinus({self.expression:r})"
+
+class AssertionFormatter:
+    def _format(self, spec):
+        if spec == "py":
+            symbol = " = "
+        else:
+            symbol = " := "
+        return FSTRINGS[spec].format(self.variable) + symbol + FSTRINGS[spec].format(self.value)
+    def __str__(self):
+        return self._format("plain")
+    def pyformat(self):
+        return self._format("py")
+    def texformat(self):
+        return self._format("tex")
+    def rawformat(self):
+        return f"Assertion({self.variable:r}, {self.value:r})"
+
+class EquationFormatter:
+    def _format(self, spec):
+        if spec == "py":
+            rhs = " == 0"
+        else:
+            rhs = " = 0"
+        return FSTRINGS[spec].format(self.expr) + rhs
+    def __str__(self):
+        return self._format("plain")
+    def pyformat(self):
+        return self._format("py")
+    def texformat(self):
+        return self._format("tex")
+    def rawformat(self):
+        name = self.__class__.__name__
+        collection = ",".join(f"{term:r}" for term in self.terms)
+        return f"{name}({collection})"

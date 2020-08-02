@@ -1,11 +1,16 @@
 from lark import Lark, Transformer, v_args
 from .functions import *
 from .base import Constant, Variable
+from .session import Session, DEBUG
+from .equations import Equation, Assertion
 
 _function_terminals = "\n".join(f'{f.upper()}: "{f}"' for f in FUNCTION_NAMES)
 _function_names = "\n| ".join(f"{f.upper()} -> func" for f in FUNCTION_NAMES)
 
 _GRAMMAR = f"""
+    ?start: expr | var_assign | equation
+    ?var_assign: var ":=" expr
+    ?equation: expr "=" expr
     ?expr: sum
     ?parexpr: "(" expr ")"
     {_function_terminals}
@@ -39,32 +44,24 @@ _GRAMMAR = f"""
 @v_args(inline=True)
 class LeibnizTree(Transformer):
     from operator import add, sub, mul, truediv as div, neg, pow
-    def __init__(self):
-        self.vars = {}
-    def assign_var(self, name, value):
-        self.vars[name] = value
-        return value
+    def __init__(self, session):
+        self.session = session
+    def var_assign(self, variable, value):
+        self.session.vars[variable.name] = value
+        return Assertion(variable, value)
     def number(self, value):
         return Constant(float(value))
     def var(self, name):
-        return Variable(name)
+        return Variable(str(name))
     def func(self, name):
-        return globals()[name]()
+        return globals()[str(name)]()
     def deriv(self, function):
         return function.derivative
     def funcappl(self, function, argument):
         return function.evaluate_at(argument)
+    def equation(self, left, right):
+        return Equation(left, right)
 
-PARSER = Lark(_GRAMMAR, parser='lalr', start="expr", transformer=LeibnizTree())
+SESSION = Session()
+PARSER = Lark(_GRAMMAR, parser='lalr', start="start", transformer=LeibnizTree(SESSION), debug=DEBUG)
 parse = PARSER.parse
-
-def repl():
-    while True:
-        try:
-            s = input('> ')
-        except (KeyboardInterrupt, EOFError):
-            print("\nGoodbye!")
-            break
-        except Exception as e:
-            print(e)
-        print(f"{parse(s).simplify()}")
