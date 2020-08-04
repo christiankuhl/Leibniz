@@ -1,3 +1,7 @@
+"""
+This module encapsulates data and functionality used in an interactive Leibniz session.
+"""
+
 import sys
 from .formatting import FSTRINGS
 
@@ -8,29 +12,55 @@ if "--debug" in sys.argv:
     DEBUG = True
 
 class Session:
+    "Interactive Leibniz session"
     def __init__(self):
-        self.vars = {}
-        self.format = "py"
-    def input(self):
-        s = input('> ')
-        if s:
+        self._vars = {}
+        self._format = "py"
+    def vars(self):
+        return self._vars
+    @property
+    def format(self):
+        "Set output format"
+        return self._format
+    def interact(self):
+        "Leibniz REPL"
+        user_input = input('> ')
+        if user_input:
             from .parsing import parse
-            x = parse(s).simplify()
-            print(FSTRINGS[self.format].format(x))
+            leibniz_expr = parse(user_input)
+            if leibniz_expr:
+                leibniz_expr.simplify()
+                print(FSTRINGS[self.format].format(leibniz_expr))
+    def python(self):
+        "Drops into a Python REPL"
+        from code import InteractiveConsole
+        console = InteractiveConsole(locals={"SESSION": self})
+        console.push("from leibniz import *")
+        console.interact(
+            ("Welcome. You're in an interactive python shell. Feel free to poke around "
+             "in your current Leibniz session, which is available under the name SESSION."),
+            "Dropping you back into Leibniz session.")
+
+def print_traceback():
+    import traceback
+    traceback.print_exc()
+
+def debug():
+    import pdb
+    pdb.set_trace()
+
 
 def repl():
     from .parsing import SESSION
     while True:
         try:
-            SESSION.input()
+            SESSION.interact()
         except (KeyboardInterrupt, EOFError):
             print("\nGoodbye!")
             break
-        except Exception as e:
+        except Exception as exception:                                      # pylint: disable=broad-except
             if not DEBUG:
-                print(f"{type(e)}: {e}")
+                print(f"{type(exception)}: {exception}")
             else:
-                import traceback
-                import pdb
-                traceback.print_exc()
-                pdb.set_trace()
+                print_traceback()
+                debug()

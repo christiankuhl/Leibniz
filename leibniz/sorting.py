@@ -1,6 +1,10 @@
+"""
+Simplification capabilities for expressions largely depend on the definition of a canonical
+form for expressions. This module takes care of that.
+"""
+
 from .base import Constant, Variable, Dot
-from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, \
-    UnaryMinus
+from .operators import Sum, Plus, Minus, Product, Times, Divide, Power, UnaryMinus
 from .functions import ScalarFunction
 
 SORT_ORDER = {

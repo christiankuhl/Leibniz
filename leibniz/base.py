@@ -1,7 +1,12 @@
+"""
+This module contains the most basic types of algebraic Leibniz expressions
+"""
+
 import collections
 from .formatting import ExpressionFormatter, DotFormatter, ConstantFormatter, VariableFormatter
 
 class Expression(ExpressionFormatter):
+    "Base class for Leibniz expressions"
     subexpr_names = ()
     needs_parentheses = False
     def simplify(self):
@@ -29,7 +34,7 @@ class Expression(ExpressionFormatter):
     def __le__(self, other):
         from .sorting import _sort_key
         return _sort_key(self) <= _sort_key(other)
-    def evaluate_at(self, expression):
+    def evaluate_at(self, expression):                                      # pylint: disable=unused-argument
         return self
     @property
     def subexpressions(self):
@@ -44,51 +49,52 @@ class Expression(ExpressionFormatter):
     @property
     def variables(self):
         return set(var for subexpr in self.subexpressions
-                for var in subexpr.variables)
+                   for var in subexpr.variables)
     def free_of(self, variable):
         return variable not in self.variables
     def sort(self):
         return self
     def pyfunction(self):
-        vars = sorted(list(self.variables))
+        variables = sorted(list(self.variables))
         signature = ",".join(vars)
-        call_dict = ",".join(f"'{var}': {var}" for var in vars)
+        call_dict = ",".join(f"'{var}': {var}" for var in variables)
         code = f"lambda {signature}: self.evaluate({{{call_dict}}})"
-        function = eval(code, {'self': self})
+        function = eval(code, {'self': self})                               # pylint: disable=eval-used
         function.__doc__ = f"({signature}) -> {self:py}"
         return function
     @property
     def derivative(self):
-        return self.partial(None).simplify()
-    def substitute(self, variable, expression):
+        return self.partial(None).simplify()                                # pylint: disable=no-member
+    def substitute(self, variable, expression):                             # pylint: disable=unused-argument
         return self
 
 class Dot(DotFormatter, Expression):
+    "Represents an implicit argument, as in Cos = Cos(·)"
     def evaluate_at(self, expression):
         return expression
     def partial(self, variable):
         if variable:
             return Constant(0)
-        else:
-            return Constant(1)
+        return Constant(1)
 
 class Constant(ConstantFormatter, Expression):
+    "Represents a constant value"
     def __init__(self, value):
         self.value = value
     def __eq__(self, other):
         if isinstance(other, Constant):
             return self.value == other.value
-        else:
-            return False
-    def partial(self, variable):
+        return False
+    def partial(self, variable):                                            # pylint: disable=unused-argument
         return Constant(0)
-    def evaluate(self, environment={}):
+    def evaluate(self, environment={}):                                     # pylint: disable=unused-argument, dangerous-default-value
         return self.value
     @property
     def variables(self):
         return set()
 
 class Variable(VariableFormatter, Expression):
+    "Represents a single scalar variable"
     def __init__(self, name):
         assert name
         self.name = name
@@ -102,7 +108,7 @@ class Variable(VariableFormatter, Expression):
             return Constant(1)
         else:
             return Constant(0)
-    def evaluate(self, environment={}):
+    def evaluate(self, environment={}):                                     # pylint: disable=dangerous-default-value
         return environment[self.name]
     @property
     def variables(self):
@@ -114,6 +120,7 @@ class Variable(VariableFormatter, Expression):
             return self
 
 class Vector(Expression):
+    "Represents a vector of Leibniz expressions"
     def __init__(self, components):
         self.components = components
     @property
@@ -121,7 +128,7 @@ class Vector(Expression):
         return len(self.components)
     def partial(self, variable):
         return Vector([c.partial(variable) for c in self.components])
-    def evaluate(self, environment={}):
+    def evaluate(self, environment={}):                                     # pylint: disable=dangerous-default-value
         return [c.evaluate(environment) for c in self.components]
     def evaluate_at(self, expression):
         return [c.evaluate_at(expression) for c in self.components]
@@ -137,15 +144,14 @@ def partial(expression, variable):
 def simplify(expression):
     return expression.simplify()
 
-def evaluate(expression, environment={}):
+def evaluate(expression, environment={}):                                   # pylint: disable=dangerous-default-value
     return expression.evaluate(environment)
 
 def gradient(expression, variables, environment=None):
     partials = [partial(expression, var) for var in variables]
     if not environment:
         return partials
-    else:
-        return [partial.evaluate(environment) for partial in partials]
+    return [partial.evaluate(environment) for partial in partials]
 
 def jacobian(function, variables, environment=None):
     return [gradient(expr, variables, environment) for expr in function]
