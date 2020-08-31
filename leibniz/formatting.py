@@ -38,11 +38,6 @@ class ExpressionFormatter:
             return self.pyformat()
         elif format_spec in TREE:
             return self.treeformat()
-    def parenthesise(self, representation):
-        if self.needs_parentheses:                                          # pylint: disable=no-member
-            return f"({representation})"
-        else:
-            return representation
     @property
     def nodeinfo(self):
         return self.__class__.__name__
@@ -75,10 +70,17 @@ class VariableFormatter:
 
 class BinaryOperatorFormatter:
     def _format(self, spec):
+        from .operators import AbelianBinaryOperator, precedence
         symbol = getattr(self.__class__, SYMBOLS[spec])
         left = FSTRINGS[spec].format(self.left)                             # pylint: disable=no-member
         right = FSTRINGS[spec].format(self.right)                           # pylint: disable=no-member
-        return self.parenthesise(f"{left}{symbol}{right}")                  # pylint: disable=no-member
+        if precedence(self.left) < precedence(self):                        # pylint: disable=no-member
+            left = f"({left})"
+        if (precedence(self.right) < precedence(self)                       # pylint: disable=no-member
+                or (precedence(self.right) == precedence(self)              # pylint: disable=no-member
+                    and not isinstance(self, AbelianBinaryOperator))):
+            right = f"({right})"
+        return f"{left}{symbol}{right}"
     def __str__(self):
         return self._format("plain")
     def pyformat(self):
@@ -90,9 +92,15 @@ class BinaryOperatorFormatter:
 
 class AbelianCollectionFormatter:
     def _format(self, spec):
-        symbol = getattr(self.__class__.binaryoperator, SYMBOLS[spec])          # pylint: disable=no-member
-        collection = symbol.join(FSTRINGS[spec].format(t) for t in self.terms)  # pylint: disable=no-member
-        return self.parenthesise(collection)                                    # pylint: disable=no-member
+        from .operators import precedence
+        symbol = getattr(self.__class__.binaryoperator, SYMBOLS[spec])      # pylint: disable=no-member
+        collection = []
+        for term in self.terms:                                             # pylint: disable=no-member
+            fterm = FSTRINGS[spec].format(term)
+            if precedence(term) < precedence(self):
+                fterm = f"({fterm})"
+            collection.append(fterm)
+        return symbol.join(collection)
     def __str__(self):
         return self._format("plain")
     def pyformat(self):

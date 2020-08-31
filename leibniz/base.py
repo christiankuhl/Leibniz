@@ -56,7 +56,7 @@ class Expression(ExpressionFormatter):
         return self
     def pyfunction(self):
         variables = sorted(list(self.variables))
-        signature = ",".join(vars)
+        signature = ",".join(variables)
         call_dict = ",".join(f"'{var}': {var}" for var in variables)
         code = f"lambda {signature}: self.evaluate({{{call_dict}}})"
         function = eval(code, {'self': self})                               # pylint: disable=eval-used

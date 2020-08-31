@@ -16,9 +16,7 @@ class BinaryOperator(BinaryOperatorFormatter, Expression):
     right_identity = None
     left_null = None
     right_null = None
-    needs_parentheses = False
     def __init__(self, left, right):
-        self.needs_parentheses = self.__class__.needs_parentheses
         self.left = left
         self.right = right
     def simplify(self):
@@ -55,7 +53,6 @@ class AbelianCollection(AbelianCollectionFormatter, Expression):
     """
     subexpr_names = ("terms",)
     def __init__(self, *terms):
-        self.needs_parentheses = self.__class__.binaryoperator.needs_parentheses # pylint: disable=no-member
         self.terms = terms
     def evaluate(self, environment={}):                                     # pylint: disable=dangerous-default-value
         operator = self.__class__.binaryoperator                            # pylint: disable=no-member
@@ -112,7 +109,6 @@ class AbelianCollection(AbelianCollectionFormatter, Expression):
 
 class AbelianBinaryOperator(BinaryOperator):
     "Base class for abelian binary operations"
-    needs_parentheses = False
     def simplify(self):
         simplified = super().simplify()
         if isinstance(simplified, AbelianBinaryOperator):
@@ -173,10 +169,6 @@ class Minus(BinaryOperator):
     pyoperator = sub
     right_identity = Constant(0)
     inverse = Plus
-    def __init__(self, left, right):
-        super().__init__(left, right)
-        if isinstance(right, (Plus, Sum)):
-            self.right.needs_parentheses = True
     def partial(self, variable):
         return Minus(self.left.partial(variable),
                      self.right.partial(variable)).simplify()
@@ -211,7 +203,6 @@ class Times(AbelianBinaryOperator):
     "It is what it says on the tin"
     symbol = py_symbol = " * "
     tex_symbol = "\\cdot "
-    needs_parentheses = False
     pyoperator = mul
     collection = Product
     left_identity = Constant(1)
@@ -229,17 +220,10 @@ Product.binaryoperator = Times
 class Divide(DivisionFormatter, BinaryOperator):
     "It is what it says on the tin"
     symbol = py_symbol = " / "
-    needs_parentheses = False
     pyoperator = div
     right_identity = Constant(1)
     left_null = Constant(0)
     inverse = Times
-    def __init__(self, left, right):
-        super().__init__(left, right)
-        if isinstance(left, (Plus, Sum)):
-            self.left.needs_parentheses = True
-        if isinstance(right, (Plus, Times, AbelianCollection)):
-            self.right.needs_parentheses = True
     def simplify(self):
         simplified = super().simplify()
         if not isinstance(simplified, Divide):
@@ -270,16 +254,9 @@ class Power(PowerFormatter, BinaryOperator):
     "It is what it says on the tin"
     symbol = "^"
     py_symbol = "**"
-    needs_parentheses = False
     pyoperator = pow
     right_identity = Constant(1)
     left_null = Constant(0)
-    def __init__(self, left, right):
-        super().__init__(left, right)
-        if isinstance(left, (BinaryOperator, AbelianCollection)):
-            self.left.needs_parentheses = True
-        if isinstance(right, (BinaryOperator, AbelianCollection)):
-            self.right.needs_parentheses = True
     def simplify(self):
         simplified = super().simplify()
         if not isinstance(simplified, Power):
@@ -309,5 +286,15 @@ class Power(PowerFormatter, BinaryOperator):
                           Times(Ln(self.left), vprime)),
                      self).simplify()
 
-Sum.up = Times
-Product.up = Power
+PRECEDENCE = {Plus: 0,
+              Minus: 0,
+              Sum: 0,
+              Times: 1,
+              Divide: 1,
+              UnaryMinus: 1,
+              Product: 1,
+              Power: 2
+              }
+
+def precedence(expr):
+    return PRECEDENCE.get(expr.__class__, 1000)

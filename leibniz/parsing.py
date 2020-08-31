@@ -28,13 +28,13 @@ def _build_grammar():
         ?funcappl: (funcname) parexpr
         ?power: atom "^" atom                                           -> pow
         ?atom: atom_nonum
-            | NUMBER                                                   -> number
+            | NUMBER                                                    -> number
         ?product: neg_atom "*" product                                  -> mul
-            | neg_atom atom_nonum                                      -> mul
-            | product "/" atom                                         -> div
+            | neg_atom atom_nonum                                       -> mul
+            | product "/" atom                                          -> div
             | neg_atom
-        ?sum: product "+" sum                                           -> add
-            | product "-" sum                                          -> sub
+        ?sum: sum "+" product                                           -> add
+            | sum "-" product                                           -> sub
             | product
         ?var: NAME                                                      -> var
         ?atom_nonum: var

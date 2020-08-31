@@ -15,7 +15,7 @@ class Session:
     "Interactive Leibniz session"
     def __init__(self):
         self._vars = {}
-        self._format = "py"
+        self._format = "tree"
     def vars(self):
         return self._vars
     @property
@@ -29,8 +29,8 @@ class Session:
             from .parsing import parse
             leibniz_expr = parse(user_input)
             if leibniz_expr:
-                leibniz_expr.simplify()
-                print(FSTRINGS[self.format].format(leibniz_expr))
+                simplified = leibniz_expr.simplify()
+                print(FSTRINGS[self.format].format(simplified))
     def python(self):
         "Drops into a Python REPL"
         from code import InteractiveConsole
